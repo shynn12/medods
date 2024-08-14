@@ -1,0 +1,11 @@
+---
+log_level: debug
+listen:
+  bind_ip: 0.0.0.0
+  port: 10000
+postgres:
+  db_URL: postgres://postgres:psql@localhost:5432/medods
+ttl:
+  access: 20m
+  refresh: 43200m #30 days
+secret: "medods"
