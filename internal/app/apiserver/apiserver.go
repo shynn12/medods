@@ -90,17 +90,6 @@ func (s *APIServer) Start() error {
 	return http.ListenAndServe(fmt.Sprintf("%s:%s", s.config.Listen.BindIp, s.config.Listen.Port), s.router)
 }
 
-// func (s *APIServer) configureLogger() error {
-// 	level, err := logrus.ParseLevel(s.config.LogLevel)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	s.logger.SetLevel(level)
-
-// 	return nil
-// }
-
 func (s *APIServer) configureRouter() {
 	s.router.HandleFunc("/test", s.handleHello)
 	s.router.HandleFunc("/refresh", s.handleRefresh).Methods(http.MethodPost)
@@ -133,7 +122,7 @@ func (s *APIServer) handleHello(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// Gives refresh and access tokens to users with given guid
+// Gives refresh and access tokens to users with given in URL guid
 // and Update token in db (for crypting token with bcrypt (limited to 72 bytes) only part of signature will be crypted and added in base)
 func (s *APIServer) handleAuth(w http.ResponseWriter, r *http.Request) {
 	guid, ok := mux.Vars(r)["guid"]
@@ -179,7 +168,7 @@ func (s *APIServer) handleAuth(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-// Perfom a refresh operation
+// Perfom a refresh operation. Post request takes refresh token from request body
 func (s *APIServer) handleRefresh(w http.ResponseWriter, r *http.Request) {
 	var tokens = &item.Tokens{}
 
