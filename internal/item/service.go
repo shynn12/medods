@@ -2,7 +2,6 @@ package item
 
 import (
 	"context"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -10,8 +9,9 @@ import (
 type Service interface {
 	GetOneByGuid(ctx context.Context, guid string) (*Item, error)
 	CreateItem(ctx context.Context, dto ItemDTO) (string, error)
-	UpdateToken(ctx context.Context, id string, token string, time time.Time) error
+	UpdateToken(ctx context.Context, id string, token string) error
 	ClearAll(ctx context.Context) error
+	Close(ctx context.Context)
 }
 
 type service struct {
@@ -35,13 +35,13 @@ func (s *service) CreateItem(ctx context.Context, dto ItemDTO) (string, error) {
 	return id, err
 }
 
-func (s *service) UpdateToken(ctx context.Context, id string, token string, time time.Time) error {
+func (s *service) UpdateToken(ctx context.Context, id string, token string) error {
 	cryptedtoken, err := bcrypt.GenerateFromPassword([]byte(token), 5)
 	if err != nil {
 		return err
 	}
 
-	err = s.storage.UpdateToken(ctx, id, string(cryptedtoken), time)
+	err = s.storage.UpdateToken(ctx, id, string(cryptedtoken))
 	if err != nil {
 		return err
 	}
@@ -52,4 +52,8 @@ func (s *service) UpdateToken(ctx context.Context, id string, token string, time
 func (s *service) ClearAll(ctx context.Context) error {
 	err := s.storage.Clear(ctx)
 	return err
+}
+
+func (s *service) Close(ctx context.Context) {
+	s.storage.Close(ctx)
 }

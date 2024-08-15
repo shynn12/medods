@@ -2,7 +2,6 @@ package auth
 
 import (
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -11,7 +10,6 @@ import (
 type JWTManager interface {
 	NewJWT(id string, ttl time.Duration, ip string) (string, error)
 	Parse(accessToken string) (*IpClaims, error)
-	NewRefreshToken() (string, error)
 }
 
 type Manager struct {
@@ -56,7 +54,7 @@ func (m *Manager) Parse(accessToken string) (*IpClaims, error) {
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, fmt.Errorf("error get user claims from token")
+		return nil, fmt.Errorf("cannot get user claims from token")
 	}
 
 	res := &IpClaims{
@@ -66,17 +64,4 @@ func (m *Manager) Parse(accessToken string) (*IpClaims, error) {
 	}
 
 	return res, nil
-}
-
-func (M *Manager) NewRefreshToken() (string, error) {
-	b := make([]byte, 32)
-
-	s := rand.NewSource(time.Now().Unix())
-	r := rand.New(s)
-
-	_, err := r.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", b), nil
 }
