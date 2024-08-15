@@ -3,6 +3,7 @@ package apiserver
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -39,6 +40,12 @@ func New(config *config.Config) *APIServer {
 }
 
 func (s *APIServer) Start() error {
+
+	var arg bool
+	flag.BoolVar(&arg, "td", false, "Create 3 users with emails: 1@gmail.com, 2@mail.ru, 3@yandex.com")
+
+	flag.Parse()
+
 	if err := s.configureLogger(); err != nil {
 		return err
 	}
@@ -50,6 +57,22 @@ func (s *APIServer) Start() error {
 
 	s.logger.Info("configurating DB")
 	s.configurateDB()
+
+	//for testing
+	if arg {
+		_, err := s.service.CreateItem(context.Background(), item.ItemDTO{Email: "1@gmail.com"})
+		if err != nil {
+			s.logger.Error(err)
+		}
+		_, err = s.service.CreateItem(context.Background(), item.ItemDTO{Email: "2@mail.ru"})
+		if err != nil {
+			s.logger.Error(err)
+		}
+		_, err = s.service.CreateItem(context.Background(), item.ItemDTO{Email: "3@yandex.com"})
+		if err != nil {
+			s.logger.Error(err)
+		}
+	}
 
 	s.logger.Info("configurate JWT")
 	manager, err := auth.NewManager(s.config.Secret)

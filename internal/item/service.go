@@ -9,8 +9,9 @@ import (
 
 type Service interface {
 	GetOneByGuid(ctx context.Context, guid string) (*Item, error)
-	// CreateItem(ctx context.Context, dto ItemDTO) (string, error)
+	CreateItem(ctx context.Context, dto ItemDTO) (string, error)
 	UpdateToken(ctx context.Context, id string, token string, time time.Time) error
+	ClearAll(ctx context.Context) error
 }
 
 type service struct {
@@ -29,13 +30,10 @@ func (s *service) GetOneByGuid(ctx context.Context, guid string) (*Item, error) 
 	return item, nil
 }
 
-// func (s *service) CreateItem(ctx context.Context, dto ItemDTO) (string, error) {
-// 	id, err := s.storage.Create(ctx, dto)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return id, nil
-// }
+func (s *service) CreateItem(ctx context.Context, dto ItemDTO) (string, error) {
+	id, err := s.storage.Create(ctx, dto)
+	return id, err
+}
 
 func (s *service) UpdateToken(ctx context.Context, id string, token string, time time.Time) error {
 	cryptedtoken, err := bcrypt.GenerateFromPassword([]byte(token), 5)
@@ -44,6 +42,14 @@ func (s *service) UpdateToken(ctx context.Context, id string, token string, time
 	}
 
 	err = s.storage.UpdateToken(ctx, id, string(cryptedtoken), time)
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+
+func (s *service) ClearAll(ctx context.Context) error {
+	err := s.storage.Clear(ctx)
 	return err
 }
